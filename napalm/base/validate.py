@@ -132,6 +132,9 @@ def compare(src, dst):
         elif not src.startswith('-') and '-' in src:
             cmp_result = _compare_range(src, dst)
             return cmp_result
+        elif src.startswith('-') and src.count('-', 1) >= 1:
+            cmp_result = _compare_range(src, dst, split_index=2)
+            return cmp_result
         else:
             m = re.search(src, py23_compat.text_type(dst))
             if m:
@@ -170,15 +173,17 @@ def _compare_numeric(src_num, dst_num):
     return getattr(dst_num, operand[match.group(1)])(float(match.group(2)))
 
 
-def _compare_range(src_num, dst_num):
+def _compare_range(src_num, dst_num, split_index=None):
     """Compare value against a range of values. You can use '%d-%d'."""
     dst_num = float(dst_num)
-
     match = src_num.split('-')
+    if split_index == 2:
+        min_value = '-{}'.format(src_num.split('-', split_index)[1])
+        max_value = '{}'.format(src_num.split('-', split_index)[2])
+        match = [ min_value, max_value ]
     if len(match) != 2:
         error = "Failed range comparison. Collected: {}. Expected: {}".format(dst_num, src_num)
         raise ValueError(error)
-
     if float(match[0]) <= dst_num <= float(match[1]):
         return True
     else:
