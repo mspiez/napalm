@@ -300,3 +300,11 @@ class TestValidate:
             assert validate._compare_numeric("<1", "asdasd2")
         with pytest.raises(ValueError):
             assert validate._compare_numeric("<1", "2asdasd")
+
+    def test_range_comparison(self):
+        assert validate._compare_range("900-1100", 1000)
+        assert validate._compare_range("-900-1100", 1000, split_index=2)
+        assert validate._compare_range("-900--100", -200, split_index=2)
+        assert not validate._compare_range("900-1100", 800)
+        assert not validate._compare_range("-900-1100", 1200, split_index=2)
+        assert not validate._compare_range("-900--100", -50, split_index=2)
